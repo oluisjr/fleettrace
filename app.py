@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# ESTILOS CSS PREMIUM (LIGHT THEME)
+# CSS 
 # ==========================================
 st.markdown("""
 <style>
@@ -144,7 +144,6 @@ def init_db():
         FOREIGN KEY (placa) REFERENCES veiculos(placa)
     )""")
     
-    # Criar admin se nao existir
     c.execute("SELECT * FROM users WHERE username=?", ("carlos.silva",))
     if not c.fetchone():
         hashed_pw = hashlib.sha256("admin123".encode()).hexdigest()
@@ -341,14 +340,14 @@ def dashboard_view():
     frota_ativa   = len(v_df)
     custo_total   = df["custo"].sum()
     
-    # Calcular manutencao pendente (por KM ou por Data)
+    # Calcula a manutencao pendente
     manut_pend = 0
     if not v_df.empty and not df.empty:
         for idx, v in v_df.iterrows():
             ult_manut = df[df["placa"] == v["placa"]]
             if not ult_manut.empty:
                 ult = ult_manut.iloc[0]
-                km_vencido = ult["km_atual"] >= (ult["km_atual"] + v["intervalo_km"]) # Simplificado, precisa km real atual, mas vamos usar ultima manutencao.
+                km_vencido = ult["km_atual"] >= (ult["km_atual"] + v["intervalo_km"])
                 # Como nao temos o KM real atual do carro sem telemetria, assumimos que 
                 # se passou o tempo desde a ultima manutencao, esta vencido.
                 meses_passados = relativedelta(date.today(), pd.to_datetime(ult["data_servico"]).date()).months
@@ -365,7 +364,7 @@ def dashboard_view():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ---- Gráficos Plotly ----
+    # ---- Gráficos ----
     col_g1, col_g2 = st.columns(2)
     with col_g1:
         st.markdown("##### 🍩 Distribuicao de Custos por Tipo")
@@ -396,7 +395,7 @@ def dashboard_view():
         fig2.update_layout(**PLOTLY_LIGHT, height=300, xaxis=dict(showgrid=False, showticklabels=False), yaxis=dict(showgrid=False, tickfont=dict(size=10)))
         st.plotly_chart(fig2, use_container_width=True)
 
-    # ---- Gráficos de Linha (Lado a Lado) ----
+    # ---- Gráficos de Linha ----
     st.markdown("---")
     col_l1, col_l2 = st.columns(2)
     
